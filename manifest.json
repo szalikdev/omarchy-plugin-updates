@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "szalikdev.plugin-updates",
+  "name": "Plugin updates",
+  "version": "1.0.0",
+  "author": "szalikdev",
+  "license": "MIT",
+  "description": "Indicates when an installed Omarchy shell plugin has an update available",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "PluginUpdates.qml"
+  },
+  "barWidget": {
+    "displayName": "Plugin updates",
+    "description": "Indicates when an installed Omarchy shell plugin has an update available",
+    "category": "System",
+    "allowMultiple": false,
+    "defaultSection": "right"
+  }
+}
