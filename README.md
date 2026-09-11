@@ -21,10 +21,21 @@ indicator — you only find out they're behind by running
 Plugins that aren't git checkouts (e.g. ones you cloned from a built-in with
 `omarchy plugin clone`) are skipped — there's nothing to fetch for those.
 
+## Requirements
+
+Just `git`, `bash`, and coreutils' `timeout` — all already present on any
+Omarchy install, since `omarchy plugin update` depends on `git` too.
+
 ## Install
 
 ```
 omarchy plugin add https://github.com/szalikdev/omarchy-plugin-updates.git --enable
+```
+
+## Remove
+
+```
+omarchy plugin remove szalikdev.plugin-updates
 ```
 
 ## Manual refresh
