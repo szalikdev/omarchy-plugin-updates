@@ -24,28 +24,37 @@ BarWidget {
   // is held to a higher bar than a command a person types themselves:
   //  - Every executable is an absolute path (/usr/bin/*, guaranteed by Arch's
   //    merged-usr layout, which Omarchy depends on elsewhere too), never a
-  //    bare name resolved through ambient PATH.
+  //    bare name resolved through ambient PATH. PATH itself is also pinned to
+  //    /usr/bin before anything runs, so any exec git does internally (e.g.
+  //    resolving a remote-helper program) can only ever find a system binary,
+  //    never something earlier in whatever PATH this process inherited.
   //  - Every git call is a fetch/rev-parse only -- nothing here ever checks
   //    out or merges, so blob-level filters (clean/smudge) never run.
+  //  - Protocols are default-denied (protocol.allow=never) and only https and
+  //    ssh -- the two transports Omarchy plugin repos actually use -- are
+  //    explicitly allowed back. That closes the general "remote.origin.url
+  //    uses a made-up scheme, git searches PATH for git-remote-<scheme> and
+  //    runs it" hole, not just the two named built-in helpers (ext, file)
+  //    that are the classic case of it.
   //  - Every git call still passes -c overrides that beat anything the
   //    repo's own .git/config (or an include it pulls in) sets: no credential
-  //    helper, no fsmonitor hook, no hooksPath, no gitProxy/http.proxy, and no
-  //    ext:// or file:// transport (the classic config-driven RCE/exfil
-  //    vectors). GIT_SSH_COMMAND is set via env, which outranks any
-  //    repo-local core.sshCommand.
+  //    helper, no fsmonitor hook, no hooksPath, no gitProxy/http.proxy.
+  //    GIT_SSH_COMMAND is set via env, which outranks any repo-local
+  //    core.sshCommand.
   //  - Repos scanned per run, and the whole operation, are bounded, and the
   //    outer Process itself carries a hard wall-clock cap so a stuck fetch or
   //    a directory full of repos can't hang this indefinitely.
   readonly property int maxRepos: 50
   readonly property int maxReport: 20
   readonly property string checkScript: [
+    "export PATH=/usr/bin",
     "export GIT_TERMINAL_PROMPT=0",
     "export GIT_SSH_COMMAND=\"/usr/bin/ssh -oBatchMode=yes\"",
     "dir=\"$HOME/.config/omarchy/plugins\"",
     "updates=()",
     "count=0",
     "safe_git=(/usr/bin/git" +
-      " -c protocol.ext.allow=never -c protocol.file.allow=never" +
+      " -c protocol.allow=never -c protocol.https.allow=always -c protocol.ssh.allow=always" +
       " -c credential.helper= -c core.fsmonitor=false" +
       " -c core.hooksPath=/dev/null -c core.gitProxy= -c http.proxy=)",
     "if [[ -d \"$dir\" ]]; then",

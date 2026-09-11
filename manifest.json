@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "szalikdev.plugin-updates",
   "name": "Plugin updates",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "author": "szalikdev",
   "license": "MIT",
   "description": "Indicates when an installed Omarchy shell plugin has an update available",
