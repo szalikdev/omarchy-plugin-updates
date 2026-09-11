@@ -38,7 +38,14 @@ BarWidget {
   //    that are the classic case of it.
   //  - Every git call still passes -c overrides that beat anything the
   //    repo's own .git/config (or an include it pulls in) sets: no credential
-  //    helper, no fsmonitor hook, no hooksPath, no gitProxy/http.proxy.
+  //    helper, no fsmonitor hook, no hooksPath, no gitProxy/http.proxy, and no
+  //    askpass program -- an HTTPS endpoint that returns an auth challenge, or
+  //    an ssh remote, can't hand off to a repo-configured (or inherited)
+  //    credential prompter. GIT_TERMINAL_PROMPT=0 only turns off git's own
+  //    terminal prompt fallback; it does nothing about an askpass helper, so
+  //    that needs covering separately, on all three of the places it can be
+  //    set (core.askPass, GIT_ASKPASS, SSH_ASKPASS) -- pointed at
+  //    /usr/bin/false, which exits nonzero without prompting or blocking.
   //    GIT_SSH_COMMAND is set via env, which outranks any repo-local
   //    core.sshCommand.
   //  - Repos scanned per run, and the whole operation, are bounded, and the
@@ -49,13 +56,16 @@ BarWidget {
   readonly property string checkScript: [
     "export PATH=/usr/bin",
     "export GIT_TERMINAL_PROMPT=0",
+    "export GIT_ASKPASS=/usr/bin/false",
+    "export SSH_ASKPASS=/usr/bin/false",
+    "export SSH_ASKPASS_REQUIRE=never",
     "export GIT_SSH_COMMAND=\"/usr/bin/ssh -oBatchMode=yes\"",
     "dir=\"$HOME/.config/omarchy/plugins\"",
     "updates=()",
     "count=0",
     "safe_git=(/usr/bin/git" +
       " -c protocol.allow=never -c protocol.https.allow=always -c protocol.ssh.allow=always" +
-      " -c credential.helper= -c core.fsmonitor=false" +
+      " -c credential.helper= -c core.fsmonitor=false -c core.askPass=/usr/bin/false" +
       " -c core.hooksPath=/dev/null -c core.gitProxy= -c http.proxy=)",
     "if [[ -d \"$dir\" ]]; then",
     "  for d in \"$dir\"/*/; do",
